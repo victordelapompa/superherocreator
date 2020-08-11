@@ -14,19 +14,19 @@ class SuperHero():
     GALLERY_PRETTY_FIELDS = ['Real Name', 'Current Alias', 'Aliases', 'Affiliation', 'Identity',
                              'Citizenship', 'Occupation', 'Gender', 'Height', 'Weight',
                              'Eyes', 'Hair', 'Origin', 'Universe', 'Creators']
-    """ Class that has information from one superhero
+    """ Class that has information from one superhero.
 
     Attributes
     -------
-    gallery_info : dict<string><string>
+    gallery_info : dict<str><str>
         Dictionary where key is the field name and the value
         is the value of that hero in that field.
 
     Parameters
     -------
-    url : string
+    url : str
         URL with the information of the superhero.
-    html : string
+    html : str
         HTML of the superhero.
     """
     def __init__(self, url, html):
@@ -46,9 +46,14 @@ class SuperHero():
     def powers(self):
         """ List of super powers.
         """
-        texts = re.findall(SuperHero.POWERS_PATTERN, self.html)
+        texts = re.findall(SuperHero.POWERS_PATTERN, self.get_powers_text())
         # Remove undesired characters
-        texts = [t.lower().replace('*', '').replace('-', ' ').strip() for t in texts]
+        texts = [t.lower()
+                  .replace('*', '')
+                  .replace('-', ' ')
+                  .replace(':', '')
+                  .strip()
+                 for t in texts]
 
         return texts
 
@@ -57,7 +62,7 @@ class SuperHero():
 
         Returns
         -------
-        list<string>
+        list<str>
             List with the information.
         """
         gallery_info = []
@@ -75,11 +80,13 @@ class SuperHero():
             # Delete the field_name from the value returned
             value = value.replace(') ' + field_name, '')
             # Delete special characters
-            value = value.replace('\n', '').strip()
+            value = value.replace('\n', '') \
+                         .replace('_', ' ') \
+                         .replace('-', ' ')
             # Delete numbers between [ ], and remove multiple spaces
             value = regex_number_brackets.sub('', value)
             value = regex_multiple_spaces.sub(' ', value)
-            gallery_info.append(value)
+            gallery_info.append(value.strip())
 
         self.gallery_info = dict(zip(SuperHero.GALLERY_PRETTY_FIELDS, gallery_info))
 
@@ -90,7 +97,7 @@ class SuperHero():
 
         Returns
         -------
-        string
+        text : str
             Text with only the powers section.
 
         """
@@ -100,4 +107,9 @@ class SuperHero():
                                                        SuperHero.POWER_SECTION,
                                                        SuperHero.ABILITIES_SECTION)
 
+        # If there was no Ability subsection we have to search for a ##
+        if SuperHero.ABILITIES_SECTION not in self.html:
+            text = SuperHero._get_text_between_two_strings(text,
+                                                           SuperHero.POWER_SECTION,
+                                                           '##')
         return text

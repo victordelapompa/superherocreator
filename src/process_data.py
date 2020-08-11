@@ -9,12 +9,11 @@ class SuperHeroDataExtractor():
     """ Class that extracts information from Marvel
         Fandom webpages.
 
-
     Parameters
     -------
-    urls : list<string>
+    urls : list<str>
         HTML URLs that are going to be downloaded.
-    all_characters : boolean
+    all_characters : bool
         If true saves in urls attribute all the urls from
         https://marvel.fandom.com/wiki/Category:Characters.
     """
@@ -50,20 +49,50 @@ class SuperHeroDataExtractor():
 
         return list(all_urls)
 
+    @classmethod
+    def _load_url(cls, url):
+        try:
+            texturl = url.split('wiki')[1].replace('/', '').replace('*', '')
+            file_path = '../data/raw_hero/' + texturl + '.txt'
+
+            with open(file_path, 'rb') as f:
+                text = f.read().decode('utf-8')
+        # If file does not exist, we have to load the HTML
+        except IOError:
+            print(url)
+            text = url2text(url, ignore_links=True)
+
+        return text
+
+    def save_urls_content(self):
+        """ Loads all the HTML in all the urls and saves them in data folder.
+        """
+        for url in tqdm(self.urls):
+            text = url2text(url, ignore_links=True)
+            texturl = url.split('wiki')[1].replace('/', '').replace('*', '')
+            file_path = '../data/raw_hero/' + texturl + '.txt'
+            with open(file_path, 'wb') as f:
+                f.write(text.encode('utf-8'))
+
     def load_data(self):
         """ Gets the information that it is needed from the htmls.
 
+        Parameters
+        -------
+        save_texts : bool
+            Whether to save or not html texts.
+
         Returns
         -------
-        texts_transformed : dict<string><list<string>>
-            Dictionary where keys are the url and the value
-            is a list of strings with the information.
+        texts_transformed : list<list>
+            List where every element has information form one URL.
+        columns: list<str>
+            List of the name of every column.
         """
-        texts = url2text(self.urls, ignore_links=True)
+        text_transformed = []
 
-        text_transformed = {}
-
-        for url, text in tqdm(texts.items()):
+        for url in tqdm(self.urls):
+            text = SuperHeroDataExtractor._load_url(url)
             sh = SuperHero(url, text)
             powers = sh.powers
 
@@ -72,8 +101,8 @@ class SuperHeroDataExtractor():
             # Get the name of the character
             name = url.split('/')[-1].replace('_', ' ')
 
-            text_transformed[url] = [name, powers, *gallery_info]
+            text_transformed.append([url, name, powers, *gallery_info])
 
-        columns = ['name', 'powers', *(SuperHero.GALLERY_PRETTY_FIELDS)]
+        columns = ['url', 'name', 'powers', *(SuperHero.GALLERY_PRETTY_FIELDS)]
 
         return text_transformed, columns

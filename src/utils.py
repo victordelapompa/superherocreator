@@ -3,35 +3,31 @@ import re
 import urllib.request as url_request
 
 
-def url2text(urls, ignore_links=False):
-    """ Reads multiple urls and transforms them to strings.
+def url2text(url, ignore_links=False):
+    """ Reads a url and transforms it to string.
 
     Parameters
     -------
-    urls : list<string>
-        HTML URLs that are going to be downloaded.
-    ignore_links : boolean
+    urls : str
+        HTML URL that is going to be downloaded.
+    ignore_links : bool
         Whether to ignore links or not.
 
     Returns
     -------
-    urls_transformed : dict<string><string>
-        Dictionary where keys are the url and the value
-        is the downloaded html transformed to string.
-
+    html : str
+        Downloaded html as string.
     """
 
     h = html2text.HTML2Text()
     h.ignore_links = ignore_links
-    urls_transformed = {}
 
-    for url in urls:
-        with url_request.urlopen(url) as f:
-            html = f.read().decode('utf-8')
+    with url_request.urlopen(url) as f:
+        html = f.read().decode('utf-8')
 
-            urls_transformed[url] = h.handle(html)
+        html = h.handle(html)
 
-    return urls_transformed
+    return html
 
 
 def get_all_urls(url, web_page, include_http=True):
@@ -39,16 +35,16 @@ def get_all_urls(url, web_page, include_http=True):
 
     Parameters
     -------
-    url : string
+    url : str
         HTML URL that contains multiple URLs as links.
-    web_page : string
+    web_page : str
         Base URL page (we keep only links to this page)
-    include_http: boolean
+    include_http: bool
         Whether the pattern has http(s):// or not.
 
     Returns
     -------
-    urls : list<string>
+    urls : list<str>
         List of urls.
     """
     pattern = ''
@@ -58,8 +54,8 @@ def get_all_urls(url, web_page, include_http=True):
 
     pattern += web_page.replace('.', '[.]') + '.+'
 
-    text = url2text([url], ignore_links=False)
-    urls = re.findall(pattern, text[url])
+    text = url2text(url, ignore_links=False)
+    urls = re.findall(pattern, text)
 
     return urls
 
@@ -72,25 +68,24 @@ def get_all_urls_list(url, web_page, include_http=True, next_button_html=None):
 
     Parameters
     -------
-    url : string
+    url : str
         HTML URL that contains multiple URLs as links.
-    web_page : string
-        Base URL page (we keep only links to this page)
-    include_http: boolean
+    web_page : str
+        Base URL page (we keep only links to this page).
+    include_http: bool
         Whether the pattern has http(s):// or not.
-    next_button_html : string
+    next_button_html : str
         Text that is written in the html for the button.
 
     Returns
     -------
-    urls : list<string>
+    urls : list<str>
         List of urls.
     """
     urls = get_all_urls(url, web_page, include_http=include_http)
 
     # See if there is a next button in the page
-    text = url2text([url], ignore_links=False)
-    text = text[url]
+    text = url2text(url, ignore_links=False)
 
     if next_button_html is None:
         return urls
