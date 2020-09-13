@@ -39,7 +39,7 @@ def text2embedding(text, tokenizer, model, init_string='', end_string=''):
     Returns
     -------
     torch.tensor
-        Embedding values for all the text
+        Embedding values for all the text.
     """
     if init_string != '' or end_string != '':
         if text is None or text == '':
@@ -63,7 +63,7 @@ def strings2embedding(arr_str, tokenizer, model):
     Parameters
     -------
     arr_str : list<str>
-        List of strings to be transformed
+        List of strings to be transformed.
     tokenizer:
         Tokenizer from transformer library.
     model :
@@ -72,7 +72,7 @@ def strings2embedding(arr_str, tokenizer, model):
     Returns
     -------
     torch.tensor
-        Embedding value for each string
+        Embedding value for each string.
     """
     input_ids = torch.tensor(tokenizer.encode([string for string in arr_str]))
     if len(input_ids.shape) == 1:
