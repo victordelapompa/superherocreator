@@ -6,8 +6,7 @@ from utils import url2text, get_all_urls, get_all_urls_list
 
 class SuperHeroDataExtractor():
     MARVEL_BASE_PAGE = 'https://marvel.fandom.com/'
-    """ Class that extracts information from Marvel
-        Fandom webpages.
+    """ Class that extracts information from Marvel Fandom webpages.
 
     Parameters
     -------
@@ -92,7 +91,10 @@ class SuperHeroDataExtractor():
         text_transformed = []
 
         for url in tqdm(self.urls):
-            text = SuperHeroDataExtractor._load_url(url)
+            try:
+                text = SuperHeroDataExtractor._load_url(url)
+            except Exception:
+                print('Not found:', url)
             sh = SuperHero(url, text)
             powers = sh.powers
 

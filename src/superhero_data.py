@@ -1,5 +1,6 @@
 import pickle
 
+from tqdm import tqdm
 import torch
 from torch.utils.data import Dataset
 
@@ -33,9 +34,9 @@ class SuperHeroDataset(Dataset):
     Attributes
     -------
     tokenizer : BertTokenizer
-        Bert tokenizer from transformer lib. (PyTorch)
+        Bert tokenizer from transformer lib. (PyTorch).
     model : BertModel
-        Bert model from transformer lib. (PyTorch)
+        Bert model from transformer lib. (PyTorch).
     """
 
     def __init__(self, df, model_name, init_string, end_string, idx, n_classes, folder=None):
@@ -64,7 +65,7 @@ class SuperHeroDataset(Dataset):
 
         Parameters
         -------
-        row : pandas.Series or dict
+        row : pandas.Series
             Anytype of object that has a __getitem__ and works with strings.
 
         Returns
@@ -114,8 +115,8 @@ class SuperHeroDataset(Dataset):
     def _pickle_all(self):
         n = len(self)
 
-        for i in range(n):
-            res = self._get_val_target(i)
+        for i in tqdm(range(n)):
+            res = self._get_val_idx(i)
             path = self.folder + str(i)
             with open(path, 'wb') as file:
                 pickle.dump(res, file)
